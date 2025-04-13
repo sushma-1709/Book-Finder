@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Finder App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+        }
+        .search-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .search-container input {
+            padding: 10px;
+            width: 300px;
+            margin-right: 10px;
+        }
+        .search-container button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .search-container button:hover {
+            background-color: #45a049;
+        }
+        .book-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+        }
+        .book-item {
+            background-color: white;
+            padding: 15px;
+            margin: 10px;
+            border-radius: 8px;
+            width: 250px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .book-item img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        .book-item h3 {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        .book-item p {
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <h1>Book Finder</h1>
+    <div class="search-container">
+        <input type="text" id="search-query" placeholder="Search by Book Title or Author">
+        <button onclick="searchBooks()">Search</button>
+    </div>
+
+    <div class="book-list" id="book-list"></div>
+
+    <script>
+        async function searchBooks() {
+            const query = document.getElementById('search-query').value;
+            if (!query) {
+                alert('Please enter a book title or author name.');
+                return;
+            }
+
+            const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=10`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                displayBooks(data.docs);
+            } catch (error) {
+                alert('An error occurred while fetching book data.');
+            }
+        }
+
+        function displayBooks(books) {
+            const bookListDiv = document.getElementById('book-list');
+            bookListDiv.innerHTML = ''; // Clear the previous results
+
+            if (books.length === 0) {
+                bookListDiv.innerHTML = '<p>No books found.</p>';
+                return;
+            }
+
+            books.forEach(book => {
+                const bookItem = document.createElement('div');
+                bookItem.classList.add('book-item');
+
+                // Book Title
+                const bookTitle = document.createElement('h3');
+                bookTitle.textContent = book.title;
+                bookItem.appendChild(bookTitle);
+
+                // Book Author
+                const bookAuthor = document.createElement('p');
+                bookAuthor.textContent = book.author_name ? `Author(s): ${book.author_name.join(', ')}` : 'Author(s): Not Available';
+                bookItem.appendChild(bookAuthor);
+
+                // Book Cover Image (if available)
+                const bookCover = document.createElement('img');
+                const coverUrl = book.cover_i ? `https://covers.openlibrary.org/b/id/${book.cover_i}-L.jpg` : 'https://via.placeholder.com/150';
+                bookCover.src = coverUrl;
+                bookItem.appendChild(bookCover);
+
+                // Book Published Year
+                const bookYear = document.createElement('p');
+                bookYear.textContent = book.first_publish_year ? `Published: ${book.first_publish_year}` : 'Year: Not Available';
+                bookItem.appendChild(bookYear);
+
+                bookListDiv.appendChild(bookItem);
+            });
+        }
+    </script>
+</body>
+</html>
